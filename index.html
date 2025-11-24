@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 دردشة ذكية عبر Hugging Face Inference API</title>
+    <style>
+        /* 🎨 التنسيق (CSS) */
+        body { font-family: sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { max-width: 650px; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        h1 { color: #00bcd4; text-align: center; margin-bottom: 10px; } /* لون أزرق سماوي */
+        #chat-window { height: 350px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; margin-bottom: 15px; background: #fafafa; border-radius: 8px; }
+        .message { margin-bottom: 10px; padding: 8px 12px; border-radius: 15px; max-width: 80%; line-height: 1.5; }
+        .user { background-color: #e0f7fa; margin-right: auto; } /* أزرق فاتح جداً */
+        .ai { background-color: #00bcd4; color: white; margin-left: auto; font-style: italic; } /* أزرق سماوي */
+        .ai.loading { background-color: #ffcc80; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        #input-area { display: flex; gap: 10px; }
+        #user-input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        #send-btn { background-color: #00bcd4; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; }
+        #send-btn:hover:not(:disabled) { background-color: #0097a7; }
+        #send-btn:disabled { background-color: #80deea; cursor: not-allowed; }
+        #status-bar { margin-top: 10px; color: #00bcd4; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🗣️ دردشة مدعومة بنموذج Hugging Face</h1>
+        
+        <p style="text-align: center; color: #333;">(يستخدم نموذج **Zephyr-7B-Beta** وهو أقوى للدردشة)</p>
+
+        <div id="chat-window">
+            <div class="message ai">مرحباً! تم تحديث مفتاحك. أرجو أن يعمل هذا النموذج بشكل أفضل. اسألني أي شيء!</div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="اكتب سؤالك هنا..." autofocus>
+            <button id="send-btn">إرسال</button>
+        </div>
+
+        <div id="status-bar"></div>
+    </div>
+
+    <script>
+        // ⚙️ كود JavaScript مضمّن
+
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const statusBar = document.getElementById('status-bar');
+
+        // **********************************************
+        // ** المفتاح الجديد الخاص بك تم وضعه هنا بنجاح ✅ **
+        // **********************************************
+        const HF_TOKEN = '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'; 
+        
+        // نقطة نهاية Inference API لنموذج Zephyr-7B-Beta (نموذج دردشة جيد)
+        const HF_MODEL_ENDPOINT = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"; 
+        
+        // **********************************************
+
+        function addMessage(text, sender, isLoading = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender);
+            if (isLoading) {
+                msgDiv.classList.add('loading');
+                msgDiv.textContent = '... جاري معالجة الرد';
+            } else {
+                msgDiv.textContent = text;
+            }
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return msgDiv; 
+        }
+
+        async function sendMessage() {
+            const userText = userInput.value.trim();
+            if (!userText || !HF_TOKEN) {
+                statusBar.textContent = "يرجى إدخال رسالة وتأكيد وجود مفتاح Access Token.";
+                return;
+            }
+
+            addMessage(userText, 'user');
+            
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            statusBar.textContent = 'جاري إرسال الطلب إلى Hugging Face...';
+
+            const loadingMessage = addMessage('', 'ai', true);
+
+            try {
+                const response = await fetch(HF_MODEL_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${HF_TOKEN}` // استخدام مفتاحك
+                    },
+                    body: JSON.stringify({
+                        inputs: userText,
+                        parameters: {
+                            max_new_tokens: 150, // زيادة طول الرد
+                            temperature: 0.7,
+                            return_full_text: false,
+                            // تفعيل إعدادات الدردشة (اختياري لكن مفيد)
+                            do_sample: true 
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    // قراءة رسالة الخطأ من Hugging Face
+                    const errorData = await response.json();
+                    throw new Error(`خطأ في API: ${response.status} - ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let aiResponse;
+                
+                // التأكد من تنسيق الرد (يختلف حسب النموذج)
+                if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
+                    aiResponse = data[0].generated_text.trim();
+                } else {
+                    aiResponse = "تنسيق الرد غير متوقع من النموذج. حاول مرة أخرى.";
+                }
+
+                loadingMessage.classList.remove('loading');
+                loadingMessage.textContent = aiResponse;
+                statusBar.textContent = "تم استلام الرد بنجاح.";
+
+            } catch (error) {
+                console.error("خطأ في الاتصال بالـ API:", error);
+                loadingMessage.classList.remove('loading');
+                // قد تكون مشكلة Failed to fetch بسبب CORS مرة أخرى.
+                loadingMessage.textContent = error.message.includes("fetch") ? 
+                                             "عذراً، ما زالت مشكلة الاتصال قائمة (Failed to fetch). يرجى محاولة تشغيل الكود على منصة ويب خارجية." :
+                                             `عذراً، حدث خطأ: ${error.message}.`;
+                statusBar.textContent = "فشل في الحصول على الرد. يرجى التحقق من الحلول المقترحة.";
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus(); 
+            }
+        }
+
+        // ربط الأحداث
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendBtn.disabled) {
+                sendMessage();
+            }
+        });
+        
+        statusBar.textContent = "الكود والمفتاح جاهزان. ابدأ الدردشة!";
+    </script>
+</body>
+</html>
