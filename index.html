@@ -2,11 +2,33 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد بسام عمارة (Pro)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
+    <title>مساعد بسام عمارة (Final Pro)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="theme-color" content="#0d47a1">
+    <link rel="manifest" href="data:application/json;base64,eyJpY29ucyI6IFt7InNyYyI6ICJodHRwczovL2FpLmdvb2dsZS9mYXZpY29uLnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIn1dLCAibmFtZSI6ICLQmtit2YXZhti32Y4g2KfZhNix2Ywg2YbYp9mIIiwgInNob3J0X25hbWUiOiAi2YbYp9mIIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIgfQ==">
+    
     <style>
+        /* الوضع الداكن الافتراضي (Dark Mode) */
         :root {
+            --primary-color: #64b5f6; 
+            --bg-color: #121212;
+            --chat-bg: #1e1e1e;
+            --container-bg: #2c2c2c;
+            --text-color: #e0e0e0;
+            --message-user: #0d47a1; 
+            --message-ai: #3a3a3a;
+            --border-color: #444;
+            --font-size: 0.95rem; 
+            --header-bg: linear-gradient(135deg, #0d47a1, #64b5f6);
+            --progress-color: #27ae60; 
+            --input-bg: #3a3a3a; 
+            --code-bg: #3e3244; 
+            --code-border: #9b59b6; 
+        }
+
+        /* الوضع الفاتح (Light Mode) */
+        body.light-mode {
             --primary-color: #0d47a1;
             --bg-color: #f4f6f8;
             --chat-bg: #e3f2fd;
@@ -15,18 +37,10 @@
             --message-user: #1565c0;
             --message-ai: #ffffff;
             --border-color: #ddd;
-        }
-
-        /* الوضع الليلي */
-        body.dark-mode {
-            --primary-color: #64b5f6;
-            --bg-color: #121212;
-            --chat-bg: #1e1e1e;
-            --container-bg: #2c2c2c;
-            --text-color: #e0e0e0;
-            --message-user: #0d47a1;
-            --message-ai: #3a3a3a;
-            --border-color: #444;
+            --header-bg: linear-gradient(135deg, #1565c0, #0d47a1);
+            --input-bg: #ffffff;
+            --code-bg: #f7f3f9; 
+            --code-border: #9b59b6;
         }
 
         body {
@@ -42,184 +56,171 @@
         }
 
         .chat-container {
-            width: 100%;
-            max-width: 600px;
-            height: 95vh;
-            background-color: var(--container-bg);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
+            width: 100%; height: 100%; max-width: 600px; 
+            background-color: var(--container-bg); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; overflow: hidden; position: relative; /* مهم لنقل الأزرار */
         }
 
-        /* الرأس */
-        .header {
-            background: linear-gradient(135deg, var(--message-user), var(--primary-color));
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* شريط التقدم */
+        #loading-bar { height: 3px; width: 0; background-color: var(--progress-color);
+            position: absolute; top: 0; left: 0; transition: width 0.3s;
+        }
+
+        .header { background: var(--header-bg); color: white; padding: 15px; display: flex;
+            justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
         .header h2 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .header-icons button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-left: 10px;
-        }
+        .header-icons button { background: none; border: none; color: white; font-size: 1.1rem; cursor: pointer; margin-left: 10px; }
 
         /* صندوق الشات */
-        .chat-box {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background-color: var(--chat-bg);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; background-color: var(--chat-bg);
+            display: flex; flex-direction: column; gap: 15px;
         }
 
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-            position: relative;
+        /* Quick Prompts */
+        #quick-prompts { padding: 5px 15px 0 15px; background-color: var(--chat-bg); display: flex;
+            gap: 8px; overflow-x: auto; white-space: nowrap;
+        }
+        .quick-btn { background: var(--primary-color); color: white; border: none; padding: 5px 10px;
+            border-radius: 15px; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; margin-bottom: 5px;
         }
 
-        .user-message {
-            align-self: flex-start;
-            background-color: var(--message-user);
-            color: white;
-            border-bottom-right-radius: 2px;
+        .message { max-width: 85%; padding: 12px 16px; border-radius: 18px; line-height: 1.5;
+            font-size: var(--font-size); word-wrap: break-word; position: relative;
         }
 
-        .ai-message {
-            align-self: flex-end;
-            background-color: var(--message-ai);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-bottom-left-radius: 2px;
+        /* رسائل الأفاتار والاتجاه */
+        .message-row { display: flex; align-items: flex-start; gap: 10px; }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; font-size: 0.8rem; font-weight: bold; background: var(--primary-color);
+            color: white; flex-shrink: 0;
         }
 
-        /* معاينة الصورة */
-        #image-preview-container {
-            padding: 10px;
-            background: var(--container-bg);
-            display: none;
-            border-top: 1px solid var(--border-color);
-        }
-        #image-preview {
-            max-height: 80px;
-            border-radius: 10px;
-            border: 2px solid var(--primary-color);
-        }
+        .user-message-row { justify-content: flex-end; } 
+        .user-message { background-color: var(--message-user); color: white; order: 2; }
+        .user-message-row .avatar { order: 1; }
 
-        /* منطقة الإدخال */
-        .input-area {
-            padding: 10px;
-            background-color: var(--container-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .ai-message-row { justify-content: flex-start; } 
+        .ai-message { background-color: var(--message-ai); color: var(--text-color); border: 1px solid var(--border-color); order: 1; }
+        .ai-message-row .avatar { order: 2; background: #27ae60; }
+        
+        /* Input Area Polish */
+        .input-area { padding: 15px; background-color: var(--container-bg); border-top: none;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px;
         }
 
         input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            border-radius: 25px;
-            border: 1px solid var(--border-color);
-            background-color: var(--chat-bg);
-            color: var(--text-color);
-            outline: none;
+            flex: 1; padding: 14px 18px; border: 1px solid var(--border-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); border-radius: 30px; 
+            background-color: var(--input-bg); color: var(--text-color); outline: none; transition: 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 5px rgba(100, 181, 246, 0.5);
         }
 
         /* الأزرار الدائرية */
-        .icon-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background-color: var(--chat-bg);
-            color: var(--primary-color);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; border: none;
+            background-color: transparent; color: var(--primary-color); cursor: pointer;
+            display: flex; justify-content: center; align-items: center; transition: 0.2s;
         }
-        .icon-btn:hover { background-color: #ddd; }
+        .icon-btn:hover { background-color: rgba(100, 181, 246, 0.1); }
         
-        #send-btn {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        #mic-btn.listening {
-            background-color: #ff3b30;
-            color: white;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
-
-        /* تنسيق الكود */
-        pre {
-            background: #2d2d2d;
+        #send-btn { background-color: var(--primary-color); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        /* تصميم قوالب الكود الجديدة */
+        .ai-message pre { 
+            background: var(--code-bg); 
             color: #f8f8f2;
-            padding: 10px;
-            border-radius: 8px;
+            border: 2px solid var(--code-border); 
+            padding: 20px 0 10px 0; 
+            margin: 10px -10px; 
+            border-radius: 10px;
             overflow-x: auto;
             direction: ltr;
             text-align: left;
             position: relative;
         }
+        
+        .code-header {
+            position: absolute; top: 0; right: 0; left: 0;
+            background-color: var(--code-border); 
+            color: white; padding: 4px 10px; font-size: 0.7rem;
+            border-top-left-radius: 8px; border-top-right-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        pre code {
+            display: block; 
+            padding: 0 10px;
+        }
+        
         .copy-code-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #444;
-            color: white;
-            border: none;
-            font-size: 0.7rem;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
+            position: relative; 
+            top: 0; right: 0; background: none; color: white;
+            font-size: 0.7rem; padding: 0 5px; cursor: pointer;
+            text-decoration: underline;
         }
 
-        /* الصور داخل الشات */
-        .chat-image {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 5px;
-            display: block;
+        /* 🚨 نقل أزرار التمرير (تغيير position) 🚨 */
+        .scroll-btn { 
+            position: absolute; /* كان fixed */
+            right: 20px; 
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--primary-color); color: white; border: none; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-size: 1.2rem; cursor: pointer; z-index: 50; opacity: 0.8;
+            transition: opacity 0.3s;
         }
+        /* المواقع النسبية لمنطقة الإدخال */
+        #scroll-bottom { bottom: 95px; } 
+        #scroll-top { bottom: 145px; } 
+        
+        /* تصميم نافذة التأكيد (Modal) */
+        #confirm-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); display: none; justify-content: center;
+            align-items: center; z-index: 1000;
+        }
+        .modal-content { background: var(--container-bg); color: var(--text-color); padding: 30px;
+            border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); max-width: 350px;
+        }
+        .modal-content h3 { color: #e74c3c; margin-top: 0; }
+        .modal-buttons { margin-top: 20px; }
+        .modal-buttons button { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        #confirm-yes { background-color: #e74c3c; color: white; }
+        #confirm-no { background-color: #bdc3c7; color: #333; }
     </style>
 </head>
 <body>
+    
+    <div id="loading-bar"></div>
 
     <div class="chat-container">
         <div class="header">
-            <h2><i class="fa-solid fa-robot"></i> مساعد بسام عمارة</h2>
+            <h2><i class="fa-solid fa-microchip"></i> مساعد بسام عمارة</h2>
             <div class="header-icons">
-                <button onclick="toggleTheme()" title="الوضع الليلي"><i class="fa-solid fa-moon"></i></button>
-                <button onclick="clearChat()" title="مسح المحادثة"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="changeFontSize(-1)" title="تصغير الخط"><i class="fa-solid fa-text-height"></i>-</button>
+                <button onclick="changeFontSize(1)" title="تكبير الخط"><i class="fa-solid fa-text-height"></i>+</button>
+                <button onclick="toggleTheme()" title="تبديل الوضع"><i class="fa-solid fa-moon"></i></button>
+                <button onclick="clearChatConfirmation()" title="مسح المحادثة"><i class="fa-solid fa-trash"></i></button>
             </div>
         </div>
+        
+        <div id="quick-prompts"></div>
 
         <div class="chat-box" id="chatBox">
-            </div>
+            <div class="typing-indicator" id="typing-indicator">...جاري التفكير</div>
+        </div>
+        
+        <button class="scroll-btn" id="scroll-bottom" onclick="scrollToBottom()"><i class="fa-solid fa-arrow-down"></i></button>
+        <button class="scroll-btn" id="scroll-top" onclick="scrollToTop()"><i class="fa-solid fa-arrow-up"></i></button>
 
         <div id="image-preview-container">
             <div style="position: relative; display: inline-block;">
-                <img id="image-preview" src="" alt="Preview">
+                <img id="image-preview" src="" alt="Preview" style="max-height: 80px; border-radius: 10px;">
                 <button onclick="removeImage()" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">&times;</button>
             </div>
         </div>
@@ -234,240 +235,391 @@
                 <i class="fa-solid fa-microphone"></i>
             </button>
 
-            <input type="text" id="userInput" placeholder="اكتب رسالة أو ارفع صورة..." onkeypress="handleEnter(event)">
+            <input type="text" id="userInput" placeholder="اكتب رسالة أو ارفع صورة..." onkeypress="handleEnter(event)" maxlength="2000"> 
             
             <button class="icon-btn" id="send-btn" onclick="sendMessage()">
                 <i class="fa-solid fa-paper-plane"></i>
             </button>
         </div>
     </div>
+    
+    <div id="confirm-modal">
+        <div class="modal-content">
+            <h3>هل أنت متأكد؟</h3>
+            <p>سيؤدي هذا إلى مسح كل الرسائل المحفوظة في ذاكرة المتصفح.</p>
+            <div class="modal-buttons">
+                <button id="confirm-no" onclick="closeModal()">إلغاء</button>
+                <button id="confirm-yes" onclick="clearChat()">حذف الدردشة</button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
-        // ✅ مفتاحك (Gemini 2.0 Flash)
+        // 🔒 تحذير أمني
+        console.warn("⚠️ تنبيه للمطور بسام عمارة: المفتاح مكشوف هنا (Client-side). هذا مناسب للتطوير الشخصي فقط. لا تستخدمه في تطبيقات الويب العامة!");
+
+        // ✅ المفتاح والموديل
         const API_KEY = "AIzaSyDBE2_5O5dOWAlWQmVbzjPOVz7u2GEIQ3g";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+        const CONTEXT_WINDOW_SIZE = 10; 
 
-        // متغيرات
+        // متغيرات الحالة العالمية
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
         const imagePreviewContainer = document.getElementById("image-preview-container");
-        const imagePreview = document.getElementById("image-preview");
-        let currentImageBase64 = null; // لتخزين الصورة مؤقتاً
+        const typingIndicator = document.getElementById("typing-indicator"); 
+        const loadingBar = document.getElementById("loading-bar"); 
+        let currentImageBase64 = null;
+        let recognition = null; 
         
-        // 1. 💾 تحميل المحادثة القديمة عند الفتح
+        // #11 - توليد رقم تعريف الجلسة (لأغراض داخلية فقط)
+        const sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+        
+        // 🚨 دالة عرض رسالة الترحيب (تم حذف معرّف الجلسة)
+        function displayWelcomeMessage() {
+            addMessage(`مرحباً! أنا مساعد ذكي تم تطويري بواسطة <b>بسام عمارة</b>.<br>كيف يمكنني مساعدتك اليوم؟`, 'ai-message');
+        }
+
+        // 1. تحميل المحادثة عند الفتح
         window.onload = function() {
             loadChatHistory();
             loadTheme();
+            initializeQuickPrompts(); 
+            setupScrollButtons(); 
+            userInput.focus(); 
+            
             if(chatBox.innerHTML.trim() === "") {
-                addMessage("مرحباً! أنا المساعد الذكي المطور بواسطة <b>بسام عمارة</b>.<br>يمكنك التحدث معي، أو إرسال صور لتحليلها!", 'ai-message');
+                displayWelcomeMessage(); 
             }
         };
-
+        
         // 2. 📤 دالة الإرسال الرئيسية
-        async function sendMessage() {
+        async function sendMessage(retryCount = 0) { 
             const text = userInput.value.trim();
-            // يجب أن يكون هناك نص أو صورة للإرسال
             if (!text && !currentImageBase64) return;
+            
+            // 🚨 فحص الأدوات المحلية أولاً (يضمن الإجابة عن الهوية)
+            const localResponse = clientSideToolCheck(text);
+            if (localResponse) {
+                addMessage(formatText(localResponse), 'ai-message');
+                saveToHistory('ai', localResponse);
+                safeSpeak(localResponse);
+                setLoading(false);
+                return; 
+            }
 
-            // تجهيز محتوى الرسالة للعرض
+            // التحقق من طول الرسالة
+            if (text.length > 2000) {
+                 alert("الرسالة طويلة جداً. الحد الأقصى 2000 حرف.");
+                 return;
+            }
+
+            // عرض رسالة المستخدم
             let displayMsg = text;
             if (currentImageBase64) {
                 displayMsg += `<br><img src="${currentImageBase64}" class="chat-image">`;
             }
-
             addMessage(displayMsg, 'user-message');
-            saveToHistory('user', displayMsg);
+            saveToHistory('user', displayMsg, currentImageBase64); 
 
-            // تنظيف المدخلات
             userInput.value = "";
-            const imageToSend = currentImageBase64; // نسخة للإرسال
-            removeImage(); // حذف الصورة من المعاينة
+            const imageToSend = currentImageBase64;
+            removeImage();
             
-            // قفل الأزرار
             setLoading(true);
 
-            // إعداد محتوى الطلب (Text + Image if exists)
-            const requestParts = [];
+            // بناء سياق المحادثة (الذاكرة)
+            const history = getChatHistoryArray();
+            const contents = history.map(msg => ({
+                role: (msg.sender === 'user' ? 'user' : 'model'),
+                parts: [{ text: msg.text }]
+            }));
             
-            // تعليمات النظام (شخصية بسام)
-            const systemPrompt = "أنت مساعد ذكي تم تطويرك وبرمجتك بواسطة 'بسام عمارة'. إذا سُئلت عن هويتك، انسب الفضل لبسام عمارة دائماً. كن مفيداً ومختصراً.";
-            requestParts.push({ text: systemPrompt + "\n\nسؤال المستخدم: " + text });
+            // تعليمات النظام
+            const systemPrompt = "أنت مساعد ذكي مطور بواسطة 'بسام عمارة'. مهمتك هي أن تكون مفيداً، مختصراً، ولبقاً. لا تذكر اسم المطور أو هويتك إلا إذا سألك المستخدم مباشرة عن ذلك.";
+            const currentRequestText = systemPrompt + "\n\nسؤال المستخدم: " + text;
 
-            // إذا وجد صورة، نضيفها للطلب
+            const requestParts = [{ text: currentRequestText }];
+            
             if (imageToSend) {
-                // إزالة رأس Base64 (data:image/jpeg;base64,)
                 const base64Data = imageToSend.split(',')[1];
-                requestParts.push({
-                    inline_data: {
-                        mime_type: "image/jpeg",
-                        data: base64Data
-                    }
-                });
+                requestParts.push({ inline_data: { mime_type: "image/jpeg", data: base64Data } });
+            }
+            
+            contents.push({ role: 'user', parts: requestParts });
+            
+            // التحقق من الاتصال بالانترنت
+            if (!navigator.onLine) {
+                 addMessage("❌ لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.", 'ai-message');
+                 setLoading(false);
+                 return;
             }
 
             try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: requestParts }] })
+                    body: JSON.stringify({ contents: contents }) 
                 });
 
                 const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
+                
+                if (!response.ok || data.error) {
+                    // محاولة إعادة الإرسال مرة واحدة
+                    if (retryCount < 1) { 
+                        console.warn("فشل الطلب، إعادة المحاولة...");
+                        await sendMessage(retryCount + 1);
+                        return;
+                    }
+                    throw new Error(data.error ? data.error.message : response.statusText);
+                }
 
                 const aiResponse = data.candidates[0].content.parts[0].text;
                 
-                // عرض الرد + نطقه
                 const formattedResponse = formatText(aiResponse);
                 addMessage(formattedResponse, 'ai-message');
-                saveToHistory('ai', formattedResponse);
-                speak(aiResponse); // 🔊 نطق الرد
+                saveToHistory('ai', aiResponse);
+                
+                safeSpeak(aiResponse);
 
             } catch (error) {
-                let msg = "❌ حدث خطأ: " + error.message;
+                let msg = `❌ حدث خطأ: ${error.message}. (${retryCount > 0 ? 'فشل إضافي بعد الإعادة' : 'فشل أول'})`;
                 if(error.message.includes("location")) msg = "⚠️ يرجى تشغيل VPN.";
                 addMessage(msg, 'ai-message');
             } finally {
                 setLoading(false);
             }
         }
+        
+        // --- 🤖 أدوات العميل (Client-Side Tools) ---
+        function clientSideToolCheck(text) {
+             const lowerText = text.toLowerCase();
+             
+             // هوية المطور: فرض الإجابة عن الهوية (الضمانة)
+             if (lowerText.includes("من طورك") || lowerText.includes("من صممك") || lowerText.includes("من صنعك") || lowerText.includes("هويتك")) {
+                 return "تم تطويري وبرمجتي بواسطة المبرمج بسام عمارة.";
+             }
+             
+             // محاكاة الوقت
+             if (lowerText.includes("كم الساعه") || lowerText.includes("ما هو الوقت")) {
+                 const now = new Date().toLocaleTimeString('ar-EG', { timeZone: 'Asia/Baghdad' });
+                 return `الساعة الآن في بغداد هي ${now}.`;
+             }
+             // محاكاة تنفيذ كود بايثون
+             if (lowerText.includes("نفذ كود") || lowerText.includes("run code")) {
+                 return "تم استلام الأمر بنجاح. بسبب القيود الأمنية، لا يمكنني تنفيذ الأكواد مباشرة هنا، ولكن الكود جاهز للتنفيذ على خادم خارجي.";
+             }
+             return null;
+        }
 
-        // 3. 🖼️ معالجة الصور
+        // --- دوال الميزات الإضافية ---
+        
+        function setLoading(isLoading) {
+            document.getElementById("send-btn").disabled = isLoading;
+            userInput.disabled = isLoading;
+            userInput.placeholder = isLoading ? "جاري التفكير..." : "اكتب رسالة أو ارفع صورة...";
+            typingIndicator.style.display = isLoading ? 'flex' : 'none'; 
+            loadingBar.style.width = isLoading ? '90%' : '0'; 
+            if(!isLoading) {
+                userInput.focus();
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function getChatHistoryArray() {
+            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+            return history.slice(-CONTEXT_WINDOW_SIZE).map(msg => ({
+                role: msg.sender === 'user' ? 'user' : 'model',
+                text: msg.text.replace(/<[^>]*>?/gm, '') 
+            }));
+        }
+
+        function exportChat() {
+            const history = getChatHistoryArray();
+            let text = `محادثة مساعد بسام عمارة\n---\n`; // تم حذف Session ID من التصدير
+            
+            history.forEach(msg => {
+                const role = msg.sender === 'user' ? 'أنا' : 'المساعد';
+                text += `[${role}]: ${msg.text}\n`;
+            });
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Chat_Export_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            addMessage("✅ تم تصدير المحادثة بنجاح.", 'ai-message');
+        }
+
+        function initializeQuickPrompts() {
+            const prompts = ["من طورك؟", "لخص هذه الرسالة", "كيف أستخدم الـ API؟", "اكتب لي كود HTML"];
+            const container = document.getElementById('quick-prompts');
+            
+            prompts.forEach(prompt => {
+                const btn = document.createElement('button');
+                btn.className = 'quick-btn';
+                btn.textContent = prompt;
+                btn.onclick = () => { userInput.value = prompt; sendMessage(); };
+                container.appendChild(btn);
+            });
+        }
+        
+        function setupScrollButtons() {
+            chatBox.onscroll = () => {
+                document.getElementById('scroll-top').style.display = chatBox.scrollTop > 100 ? 'block' : 'none';
+                const isAtBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 5;
+                document.getElementById('scroll-bottom').style.display = isAtBottom ? 'none' : 'block';
+            };
+        }
+        function scrollToBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
+        function scrollToTop() { chatBox.scrollTop = 0; }
+        
+        function changeFontSize(direction) {
+            const currentSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-size').replace('rem', ''));
+            let newSize = currentSize + (direction * 0.05);
+            if (newSize < 0.8) newSize = 0.8;
+            if (newSize > 1.2) newSize = 1.2;
+            document.documentElement.style.setProperty('--font-size', `${newSize}rem`);
+        }
+        
+        // --- دوال الصور والذاكرة والتنسيق ---
         function handleImageSelect(event) {
             const file = event.target.files[0];
             if (file) {
+                if (!file.type.startsWith('image/')) { alert("الرجاء اختيار ملف صورة."); return; }
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     currentImageBase64 = e.target.result;
-                    imagePreview.src = currentImageBase64;
+                    document.getElementById('image-preview').src = currentImageBase64;
                     imagePreviewContainer.style.display = "block";
                 };
                 reader.readAsDataURL(file);
             }
         }
-
         function removeImage() {
             currentImageBase64 = null;
-            imagePreview.src = "";
+            document.getElementById('image-preview').src = "";
             imagePreviewContainer.style.display = "none";
             document.getElementById('imageInput').value = "";
         }
-
-        // 4. 🎤 تحويل الصوت إلى نص (Speech to Text)
-        function toggleVoice() {
-            const micBtn = document.getElementById("mic-btn");
-            
-            if (!('webkitSpeechRecognition' in window)) {
-                alert("عذراً، متصفحك لا يدعم تحويل الصوت لنص. جرب Google Chrome.");
-                return;
-            }
-
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = "ar-SA"; // اللغة العربية
-            recognition.continuous = false;
-
-            recognition.onstart = function() {
-                micBtn.classList.add("listening");
-            };
-
-            recognition.onend = function() {
-                micBtn.classList.remove("listening");
-            };
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                setTimeout(sendMessage, 500); // إرسال تلقائي بعد نصف ثانية
-            };
-
-            recognition.start();
-        }
-
-        // 5. 🔊 تحويل النص إلى صوت (Text to Speech)
-        function speak(text) {
-            // إيقاف أي كلام سابق
+        function safeSpeak(text) {
+            if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
-            
-            // تنظيف النص من الرموز (مثل النجوم والأكواد) لكي لا يقرأها
             const cleanText = text.replace(/[*#`]/g, '');
-            
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = "ar-SA";
-            utterance.rate = 1; // السرعة
             window.speechSynthesis.speak(utterance);
         }
-
-        // 6. 💾 الذاكرة (Local Storage)
-        function saveToHistory(sender, text) {
+        function saveToHistory(sender, text, imageBase64 = null) {
             let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            history.push({ sender, text });
+            history.push({ sender, text, imageBase64 });
+            if (history.length > 50) history.shift();
             localStorage.setItem('chatHistory', JSON.stringify(history));
         }
-
         function loadChatHistory() {
             let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
             history.forEach(msg => {
                 const className = msg.sender === 'user' ? 'user-message' : 'ai-message';
-                addMessage(msg.text, className, false); // false = لا تحفظ مرة أخرى
+                let content = msg.text;
+                if (msg.imageBase64) content += `<br><img src="${msg.imageBase64}" class="chat-image">`;
+                addMessage(content, className, false);
             });
         }
-
+        function clearChatConfirmation() { document.getElementById('confirm-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('confirm-modal').style.display = 'none'; }
         function clearChat() {
-            if(confirm("هل أنت متأكد من مسح المحادثة؟")) {
-                localStorage.removeItem('chatHistory');
-                chatBox.innerHTML = "";
-                addMessage("تم مسح الذاكرة بنجاح.", 'ai-message');
+            localStorage.removeItem('chatHistory');
+            chatBox.innerHTML = "";
+            displayWelcomeMessage(); 
+            closeModal();
+        }
+        function toggleTheme() {
+            if (document.body.classList.contains("light-mode")) {
+                 document.body.classList.remove("light-mode");
+                 localStorage.setItem("theme", "dark");
+            } else {
+                 document.body.classList.add("light-mode");
+                 localStorage.setItem("theme", "light");
             }
         }
-
-        // 7. 🌙 الوضع الليلي
-        function toggleTheme() {
-            document.body.classList.toggle("dark-mode");
-            const isDark = document.body.classList.contains("dark-mode");
-            localStorage.setItem("theme", isDark ? "dark" : "light");
-        }
-
         function loadTheme() {
             const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "dark") document.body.classList.add("dark-mode");
+            if (savedTheme === "light") {
+                document.body.classList.add("light-mode");
+            }
         }
-
-        // دوال مساعدة
         function addMessage(html, className, save = true) {
+            const msgClass = className.includes('user') ? 'user-message-row' : 'ai-message-row';
+            const avatarSymbol = className.includes('user') ? '👤' : '🤖';
+
+            const row = document.createElement('div');
+            row.className = `message-row ${msgClass}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'avatar';
+            avatarDiv.textContent = avatarSymbol;
+            
             const div = document.createElement("div");
             div.className = `message ${className}`;
             div.innerHTML = html;
-            chatBox.appendChild(div);
+            
+            row.appendChild(avatarDiv);
+            row.appendChild(div);
+            
+            if (className.includes('user')) {
+                div.style.order = 2; 
+                avatarDiv.style.order = 1; 
+            } else {
+                div.style.order = 1; 
+                avatarDiv.style.order = 2; 
+            }
+            
+            chatBox.appendChild(row);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function setLoading(isLoading) {
-            document.getElementById("send-btn").disabled = isLoading;
-            userInput.disabled = isLoading;
-            userInput.placeholder = isLoading ? "جاري التفكير..." : "اكتب رسالة أو ارفع صورة...";
-            if(!isLoading) userInput.focus();
-        }
-
-        // تنسيق النص والأكواد
         function formatText(text) {
-            // تحويل كتل الأكواد ```code```
             let formatted = text.replace(/```([\s\S]*?)```/g, function(match, code) {
-                return `<pre>${code.replace(/</g, "&lt;")}<button class="copy-code-btn" onclick="copyCode(this)">نسخ</button></pre>`;
+                // شريط الرأس البنفسجي
+                const header = `<div class="code-header">Code Block <button class="copy-code-btn" onclick="copyCode(this)">نسخ</button></div>`;
+                return `<pre>${header}<code>${code.replace(/</g, "&lt;")}</code></pre>`;
             });
-            // تحويل الخط العريض والأسطر
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
             return formatted;
         }
 
         function copyCode(btn) {
-            const code = btn.parentElement.innerText.replace("نسخ", "");
+            // الوصول إلى الكود الأصلي داخل <code>
+            const codeElement = btn.parentElement.nextElementSibling;
+            const code = codeElement ? codeElement.innerText : 'غير متوفر';
+            
             navigator.clipboard.writeText(code);
             btn.innerText = "تم النسخ!";
             setTimeout(() => btn.innerText = "نسخ", 2000);
         }
 
-        function handleEnter(event) {
-            if (event.key === "Enter") sendMessage();
+        function handleEnter(event) { if (event.key === "Enter") sendMessage(); }
+
+        // --- Mic Logic ---
+        function toggleVoice() {
+            const micBtn = document.getElementById("mic-btn");
+            if (!('webkitSpeechRecognition' in window)) { alert("⚠️ المايك لا يعمل: متصفحك لا يدعم تحويل الصوت لنص. جرب Google Chrome."); return; }
+            if (recognition) { recognition.stop(); recognition = null; return; }
+            recognition = new webkitSpeechRecognition(); recognition.lang = "ar-SA"; recognition.continuous = false; recognition.interimResults = false;
+            recognition.onstart = function() { micBtn.classList.add("listening"); };
+            recognition.onend = function() { micBtn.classList.remove("listening"); recognition = null; };
+            recognition.onerror = function(event) { micBtn.classList.remove("listening"); recognition = null; alert("فشل في التقاط الصوت. تأكد من إعطاء إذن الميكروفون."); };
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                setTimeout(sendMessage, 500);
+            };
+            recognition.start();
         }
     </script>
 
