@@ -2,626 +2,372 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
-    <title>مساعد بسام عمارة (Final Pro)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شات أبو أمير (دخول جوجل)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="theme-color" content="#0d47a1">
-    <link rel="manifest" href="data:application/json;base64,eyJpY29ucyI6IFt7InNyYyI6ICJodHRwczovL2FpLmdvb2dsZS9mYXZpY29uLnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIn1dLCAibmFtZSI6ICLQmtit2YXZhti32Y4g2KfZhNix2Ywg2YbYp9mIIiwgInNob3J0X25hbWUiOiAi2YbYp9mIIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIgfQ==">
-    
     <style>
-        /* الوضع الداكن الافتراضي (Dark Mode) */
-        :root {
-            --primary-color: #64b5f6; 
-            --bg-color: #121212;
-            --chat-bg: #1e1e1e;
-            --container-bg: #2c2c2c;
-            --text-color: #e0e0e0;
-            --message-user: #0d47a1; 
-            --message-ai: #3a3a3a;
-            --border-color: #444;
-            --font-size: 0.95rem; 
-            --header-bg: linear-gradient(135deg, #0d47a1, #64b5f6);
-            --progress-color: #27ae60; 
-            --input-bg: #3a3a3a; 
-            --code-bg: #3e3244; 
-            --code-border: #9b59b6; 
-        }
+        /* --- التصميم الأساسي (لم يتغير) --- */
+        body { font-family: 'Segoe UI', sans-serif; background: #d1d7db; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .app-container { width: 100%; max-width: 600px; height: 100vh; background: #fff; display: flex; flex-direction: column; position: relative; }
+        .chat-header { background-color: #008069; color: white; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
+        .room-info { font-size: 12px; opacity: 0.9; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; background-color: #e5ddd5; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 14px; position: relative; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .message.mine { align-self: flex-end; background-color: #dcf8c6; border-radius: 8px 0 8px 8px; }
+        .message.others { align-self: flex-start; background-color: #fff; border-radius: 0 8px 8px 8px; }
+        .msg-img { max-width: 100%; border-radius: 5px; margin-top: 5px; display: block; cursor: pointer; }
+        audio { height: 35px; width: 220px; margin-top: 5px; border-radius: 20px; }
+        .sender-name { font-size: 11px; color: #d35400; font-weight: bold; display: block; margin-bottom: 2px; }
+        .msg-time { font-size: 9px; color: gray; display: block; text-align: left; margin-top: 4px; }
+        .input-area { padding: 8px; background: #f0f2f5; display: flex; align-items: center; gap: 8px; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 25px; border: none; outline: none; font-size: 15px; }
+        .icon-btn { background: none; border: none; font-size: 1.4rem; color: #54656f; cursor: pointer; padding: 5px; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .icon-btn:hover { color: #008069; transform: scale(1.1); }
+        .recording { color: red !important; animation: pulse 1s infinite; }
+        .success-message { color: green; font-size: 14px; margin-top: 10px; font-weight: bold; }
 
-        /* الوضع الفاتح (Light Mode) */
-        body.light-mode {
-            --primary-color: #0d47a1;
-            --bg-color: #f4f6f8;
-            --chat-bg: #e3f2fd;
-            --container-bg: #ffffff;
-            --text-color: #333;
-            --message-user: #1565c0;
-            --message-ai: #ffffff;
-            --border-color: #ddd;
-            --header-bg: linear-gradient(135deg, #1565c0, #0d47a1);
-            --input-bg: #ffffff;
-            --code-bg: #f7f3f9; 
-            --code-border: #9b59b6;
+        /* --- تصميم نافذة الدخول الداكنة (Dark Modal) --- */
+        .modal { background: #1e293b; /* خلفية داكنة */ }
+        .modal-box { 
+            background: #2a3547; /* لون أفتح قليلاً للصندوق */
+            color: #f3f3f3; /* نص فاتح */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
+        .modal-box input {
+            background: #374151; /* حقول داكنة */
+            color: white;
+            border: 1px solid #4b5563;
+        }
+        .modal-box p { color: #9ca3af; }
+        .modal-box button { background: #00a884; font-weight: bold; } /* زر رئيسي أخضر */
+        .modal-box .secondary-btn { background: #4b5563; } /* زر ثانوي رمادي */
+        .modal-box .google-btn { 
+            background: white; 
+            color: #333; 
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            padding: 10px 12px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            transition: background-color 0.3s;
+            justify-content: center;
         }
+        .modal-box .google-btn i { font-size: 1.2rem; margin-left: 10px; color: #db4437; /* لون جوجل الأحمر */ }
 
-        .chat-container {
-            width: 100%; height: 100%; max-width: 600px; 
-            background-color: var(--container-bg); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex; flex-direction: column; overflow: hidden; position: relative; /* مهم لنقل الأزرار */
-        }
-
-        /* شريط التقدم */
-        #loading-bar { height: 3px; width: 0; background-color: var(--progress-color);
-            position: absolute; top: 0; left: 0; transition: width 0.3s;
-        }
-
-        .header { background: var(--header-bg); color: white; padding: 15px; display: flex;
-            justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .header h2 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-        .header-icons button { background: none; border: none; color: white; font-size: 1.1rem; cursor: pointer; margin-left: 10px; }
-
-        /* صندوق الشات */
-        .chat-box { flex: 1; padding: 15px; overflow-y: auto; background-color: var(--chat-bg);
-            display: flex; flex-direction: column; gap: 15px;
-        }
-
-        /* Quick Prompts */
-        #quick-prompts { padding: 5px 15px 0 15px; background-color: var(--chat-bg); display: flex;
-            gap: 8px; overflow-x: auto; white-space: nowrap;
-        }
-        .quick-btn { background: var(--primary-color); color: white; border: none; padding: 5px 10px;
-            border-radius: 15px; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; margin-bottom: 5px;
-        }
-
-        .message { max-width: 85%; padding: 12px 16px; border-radius: 18px; line-height: 1.5;
-            font-size: var(--font-size); word-wrap: break-word; position: relative;
-        }
-
-        /* رسائل الأفاتار والاتجاه */
-        .message-row { display: flex; align-items: flex-start; gap: 10px; }
-        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; font-size: 0.8rem; font-weight: bold; background: var(--primary-color);
-            color: white; flex-shrink: 0;
-        }
-
-        .user-message-row { justify-content: flex-end; } 
-        .user-message { background-color: var(--message-user); color: white; order: 2; }
-        .user-message-row .avatar { order: 1; }
-
-        .ai-message-row { justify-content: flex-start; } 
-        .ai-message { background-color: var(--message-ai); color: var(--text-color); border: 1px solid var(--border-color); order: 1; }
-        .ai-message-row .avatar { order: 2; background: #27ae60; }
+        .error-message { color: #f87171; font-weight: bold; } 
         
-        /* Input Area Polish */
-        .input-area { padding: 15px; background-color: var(--container-bg); border-top: none;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px;
+        /* حالة الإشعار بعد التسجيل */
+        .pending-verification {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
         }
-
-        input[type="text"] {
-            flex: 1; padding: 14px 18px; border: 1px solid var(--border-color);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); border-radius: 30px; 
-            background-color: var(--input-bg); color: var(--text-color); outline: none; transition: 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 5px rgba(100, 181, 246, 0.5);
-        }
-
-        /* الأزرار الدائرية */
-        .icon-btn { width: 45px; height: 45px; border-radius: 50%; border: none;
-            background-color: transparent; color: var(--primary-color); cursor: pointer;
-            display: flex; justify-content: center; align-items: center; transition: 0.2s;
-        }
-        .icon-btn:hover { background-color: rgba(100, 181, 246, 0.1); }
-        
-        #send-btn { background-color: var(--primary-color); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        /* تصميم قوالب الكود الجديدة */
-        .ai-message pre { 
-            background: var(--code-bg); 
-            color: #f8f8f2;
-            border: 2px solid var(--code-border); 
-            padding: 20px 0 10px 0; 
-            margin: 10px -10px; 
-            border-radius: 10px;
-            overflow-x: auto;
-            direction: ltr;
-            text-align: left;
-            position: relative;
-        }
-        
-        .code-header {
-            position: absolute; top: 0; right: 0; left: 0;
-            background-color: var(--code-border); 
-            color: white; padding: 4px 10px; font-size: 0.7rem;
-            border-top-left-radius: 8px; border-top-right-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        pre code {
-            display: block; 
-            padding: 0 10px;
-        }
-        
-        .copy-code-btn {
-            position: relative; 
-            top: 0; right: 0; background: none; color: white;
-            font-size: 0.7rem; padding: 0 5px; cursor: pointer;
-            text-decoration: underline;
-        }
-
-        /* 🚨 نقل أزرار التمرير (تغيير position) 🚨 */
-        .scroll-btn { 
-            position: absolute; /* كان fixed */
-            right: 20px; 
-            width: 40px; height: 40px; border-radius: 50%;
-            background: var(--primary-color); color: white; border: none; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            font-size: 1.2rem; cursor: pointer; z-index: 50; opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        /* المواقع النسبية لمنطقة الإدخال */
-        #scroll-bottom { bottom: 95px; } 
-        #scroll-top { bottom: 145px; } 
-        
-        /* تصميم نافذة التأكيد (Modal) */
-        #confirm-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); display: none; justify-content: center;
-            align-items: center; z-index: 1000;
-        }
-        .modal-content { background: var(--container-bg); color: var(--text-color); padding: 30px;
-            border-radius: 15px; text-align: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5); max-width: 350px;
-        }
-        .modal-content h3 { color: #e74c3c; margin-top: 0; }
-        .modal-buttons { margin-top: 20px; }
-        .modal-buttons button { padding: 10px 20px; margin: 0 10px; border: none; border-radius: 8px;
-            cursor: pointer; font-weight: bold; transition: 0.3s;
-        }
-        #confirm-yes { background-color: #e74c3c; color: white; }
-        #confirm-no { background-color: #bdc3c7; color: #333; }
+        .pending-verification h3 { margin-top: 20px; color: #34d399; }
+        .pending-verification i { font-size: 4rem; color: #34d399; }
     </style>
 </head>
 <body>
-    
-    <div id="loading-bar"></div>
 
-    <div class="chat-container">
-        <div class="header">
-            <h2><i class="fa-solid fa-microchip"></i> مساعد بسام عمارة</h2>
-            <div class="header-icons">
-                <button onclick="changeFontSize(-1)" title="تصغير الخط"><i class="fa-solid fa-text-height"></i>-</button>
-                <button onclick="changeFontSize(1)" title="تكبير الخط"><i class="fa-solid fa-text-height"></i>+</button>
-                <button onclick="toggleTheme()" title="تبديل الوضع"><i class="fa-solid fa-moon"></i></button>
-                <button onclick="clearChatConfirmation()" title="مسح المحادثة"><i class="fa-solid fa-trash"></i></button>
+    <div class="modal" id="loginModal">
+        <div class="modal-box">
+            <div id="authContent">
+                <div style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">🔑 تسجيل الدخول</div>
+
+                <button class="google-btn" onclick="signInWithGoogle()"><i class="fa-brands fa-google"></i> الدخول عبر جوجل</button>
+                
+                <hr style="border-top: 1px solid #4b5563; margin: 20px 0;">
+
+                <p style="margin-bottom: 15px;">أو استخدم بريدك وكلمة المرور</p>
+                <input type="text" id="emailInput" placeholder="البريد الإلكتروني">
+                <input type="password" id="passwordInput" placeholder="كلمة المرور (6 أحرف أو أكثر)">
+                
+                <p class="error-message" id="authError"></p>
+
+                <button onclick="loginUser()">دخول للدردشة</button>
+                <button class="secondary-btn" onclick="registerUser()">تسجيل حساب جديد</button>
+            </div>
+
+            <div id="verificationPending" style="display: none;" class="pending-verification">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+                <h3>تم التسجيل بنجاح!</h3>
+                <p>تم إرسال **رابط التفعيل** إلى بريدك الإلكتروني.</p>
+                <p style="font-size: 14px; margin-top: 15px;">الرجاء الضغط على الرابط في بريدك (الجيميل) ثم **العودة لتسجيل الدخول**.</p>
+                <button style="margin-top: 30px;" onclick="auth.signOut()">العودة لصفحة الدخول</button>
             </div>
         </div>
-        
-        <div id="quick-prompts"></div>
+    </div>
 
-        <div class="chat-box" id="chatBox">
-            <div class="typing-indicator" id="typing-indicator">...جاري التفكير</div>
-        </div>
-        
-        <button class="scroll-btn" id="scroll-bottom" onclick="scrollToBottom()"><i class="fa-solid fa-arrow-down"></i></button>
-        <button class="scroll-btn" id="scroll-top" onclick="scrollToTop()"><i class="fa-solid fa-arrow-up"></i></button>
+    <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
+        <img id="lightboxImg" src="">
+    </div>
 
-        <div id="image-preview-container">
-            <div style="position: relative; display: inline-block;">
-                <img id="image-preview" src="" alt="Preview" style="max-height: 80px; border-radius: 10px;">
-                <button onclick="removeImage()" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">&times;</button>
+    <div class="app-container" style="display: none;">
+        <div class="chat-header">
+            <div>
+                <div style="font-weight: bold;">شات أبو أمير</div>
+                <div class="room-info" id="headerRoomName">الغرفة الرئيسية</div>
             </div>
+            <button class="logout-btn" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
         </div>
+
+        <div class="messages-area" id="messagesList"></div>
 
         <div class="input-area">
-            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
-            <button class="icon-btn" onclick="document.getElementById('imageInput').click()" title="إرفاق صورة">
-                <i class="fa-solid fa-paperclip"></i>
-            </button>
-
-            <button class="icon-btn" id="mic-btn" onclick="toggleVoice()" title="تحدث">
-                <i class="fa-solid fa-microphone"></i>
-            </button>
-
-            <input type="text" id="userInput" placeholder="اكتب رسالة أو ارفع صورة..." onkeypress="handleEnter(event)" maxlength="2000"> 
-            
-            <button class="icon-btn" id="send-btn" onclick="sendMessage()">
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
-    
-    <div id="confirm-modal">
-        <div class="modal-content">
-            <h3>هل أنت متأكد؟</h3>
-            <p>سيؤدي هذا إلى مسح كل الرسائل المحفوظة في ذاكرة المتصفح.</p>
-            <div class="modal-buttons">
-                <button id="confirm-no" onclick="closeModal()">إلغاء</button>
-                <button id="confirm-yes" onclick="clearChat()">حذف الدردشة</button>
-            </div>
+            <input type="file" id="imgInput" accept="image/*" style="display: none;" onchange="handleImageSelect()">
+            <button class="icon-btn" onclick="document.getElementById('imgInput').click()"><i class="fa-solid fa-camera"></i></button>
+            <button class="icon-btn" id="micBtn" onclick="toggleRecording()"><i class="fa-solid fa-microphone"></i></button>
+            <input type="text" id="msgInput" placeholder="اكتب رسالة..." autocomplete="off">
+            <button class="icon-btn" id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane" style="color: #008069;"></i></button>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // 🔒 تحذير أمني
-        console.warn("⚠️ تنبيه للمطور بسام عمارة: المفتاح مكشوف هنا (Client-side). هذا مناسب للتطوير الشخصي فقط. لا تستخدمه في تطبيقات الويب العامة!");
-
-        // ✅ المفتاح والموديل
-        const API_KEY = "AIzaSyDBE2_5O5dOWAlWQmVbzjPOVz7u2GEIQ3g";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-        const CONTEXT_WINDOW_SIZE = 10; 
-
-        // متغيرات الحالة العالمية
-        const chatBox = document.getElementById("chatBox");
-        const userInput = document.getElementById("userInput");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
-        const typingIndicator = document.getElementById("typing-indicator"); 
-        const loadingBar = document.getElementById("loading-bar"); 
-        let currentImageBase64 = null;
-        let recognition = null; 
-        
-        // #11 - توليد رقم تعريف الجلسة (لأغراض داخلية فقط)
-        const sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
-        
-        // 🚨 دالة عرض رسالة الترحيب (تم حذف معرّف الجلسة)
-        function displayWelcomeMessage() {
-            addMessage(`مرحباً! أنا مساعد ذكي تم تطويري بواسطة <b>بسام عمارة</b>.<br>كيف يمكنني مساعدتك اليوم؟`, 'ai-message');
-        }
-
-        // 1. تحميل المحادثة عند الفتح
-        window.onload = function() {
-            loadChatHistory();
-            loadTheme();
-            initializeQuickPrompts(); 
-            setupScrollButtons(); 
-            userInput.focus(); 
-            
-            if(chatBox.innerHTML.trim() === "") {
-                displayWelcomeMessage(); 
-            }
+        // --- إعدادات Firebase الخاصة بك (sjfie-bed64) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPapPdivEQO1UPqQdCRTBI6ct8KZDtqyw", 
+            authDomain: "sjfie-bed64.firebaseapp.com",
+            projectId: "sjfie-bed64",
+            storageBucket: "sjfie-bed64.firebasestorage.app",
+            messagingSenderId: "67450727104",
+            appId: "1:67450727104:web:4d271f44bab9740571db25"
         };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth(); 
+
+        let myName = "";
+        const defaultRoom = "MainRoom"; 
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        function showError(message) {
+            document.getElementById('authError').innerText = message;
+        }
         
-        // 2. 📤 دالة الإرسال الرئيسية
-        async function sendMessage(retryCount = 0) { 
-            const text = userInput.value.trim();
-            if (!text && !currentImageBase64) return;
-            
-            // 🚨 فحص الأدوات المحلية أولاً (يضمن الإجابة عن الهوية)
-            const localResponse = clientSideToolCheck(text);
-            if (localResponse) {
-                addMessage(formatText(localResponse), 'ai-message');
-                saveToHistory('ai', localResponse);
-                safeSpeak(localResponse);
-                setLoading(false);
-                return; 
-            }
+        // --- 1. المصادقة وتتبع حالة الدخول ---
+        auth.onAuthStateChanged(user => {
+            const appContainer = document.querySelector('.app-container');
+            const loginModal = document.getElementById("loginModal");
 
-            // التحقق من طول الرسالة
-            if (text.length > 2000) {
-                 alert("الرسالة طويلة جداً. الحد الأقصى 2000 حرف.");
-                 return;
-            }
-
-            // عرض رسالة المستخدم
-            let displayMsg = text;
-            if (currentImageBase64) {
-                displayMsg += `<br><img src="${currentImageBase64}" class="chat-image">`;
-            }
-            addMessage(displayMsg, 'user-message');
-            saveToHistory('user', displayMsg, currentImageBase64); 
-
-            userInput.value = "";
-            const imageToSend = currentImageBase64;
-            removeImage();
-            
-            setLoading(true);
-
-            // بناء سياق المحادثة (الذاكرة)
-            const history = getChatHistoryArray();
-            const contents = history.map(msg => ({
-                role: (msg.sender === 'user' ? 'user' : 'model'),
-                parts: [{ text: msg.text }]
-            }));
-            
-            // تعليمات النظام
-            const systemPrompt = "أنت مساعد ذكي مطور بواسطة 'بسام عمارة'. مهمتك هي أن تكون مفيداً، مختصراً، ولبقاً. لا تذكر اسم المطور أو هويتك إلا إذا سألك المستخدم مباشرة عن ذلك.";
-            const currentRequestText = systemPrompt + "\n\nسؤال المستخدم: " + text;
-
-            const requestParts = [{ text: currentRequestText }];
-            
-            if (imageToSend) {
-                const base64Data = imageToSend.split(',')[1];
-                requestParts.push({ inline_data: { mime_type: "image/jpeg", data: base64Data } });
-            }
-            
-            contents.push({ role: 'user', parts: requestParts });
-            
-            // التحقق من الاتصال بالانترنت
-            if (!navigator.onLine) {
-                 addMessage("❌ لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.", 'ai-message');
-                 setLoading(false);
-                 return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: contents }) 
-                });
-
-                const data = await response.json();
-                
-                if (!response.ok || data.error) {
-                    // محاولة إعادة الإرسال مرة واحدة
-                    if (retryCount < 1) { 
-                        console.warn("فشل الطلب، إعادة المحاولة...");
-                        await sendMessage(retryCount + 1);
-                        return;
-                    }
-                    throw new Error(data.error ? data.error.message : response.statusText);
+            if (user) {
+                // ملاحظة: Google Sign-In تتحقق من البريد تلقائياً، لذا نمرر هذا الشرط
+                if (user.providerData[0].providerId === 'password' && !user.emailVerified) {
+                    // إذا كان مسجل دخول بالبريد وكلمة السر ولكنه غير مفعل
+                    document.getElementById('authContent').style.display = 'none';
+                    document.getElementById('verificationPending').style.display = 'flex';
+                    appContainer.style.display = "none";
+                    loginModal.style.display = "flex";
+                    auth.signOut(); 
+                    return;
                 }
-
-                const aiResponse = data.candidates[0].content.parts[0].text;
                 
-                const formattedResponse = formatText(aiResponse);
-                addMessage(formattedResponse, 'ai-message');
-                saveToHistory('ai', aiResponse);
-                
-                safeSpeak(aiResponse);
+                // يتم استخدام Display Name من جوجل إن وجد، أو البريد كاسم
+                myName = user.displayName || user.email; 
+                startApp();
+                loginModal.style.display = "none";
+                appContainer.style.display = "flex";
+            } else {
+                document.getElementById('authContent').style.display = 'block';
+                document.getElementById('verificationPending').style.display = 'none';
+                loginModal.style.display = "flex";
+                appContainer.style.display = "none";
+                showError("");
+            }
+        });
 
-            } catch (error) {
-                let msg = `❌ حدث خطأ: ${error.message}. (${retryCount > 0 ? 'فشل إضافي بعد الإعادة' : 'فشل أول'})`;
-                if(error.message.includes("location")) msg = "⚠️ يرجى تشغيل VPN.";
-                addMessage(msg, 'ai-message');
-            } finally {
-                setLoading(false);
+        // --- 2. الدخول عبر جوجل (جديد) ---
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        showError("تم إلغاء عملية الدخول من قبل المستخدم.");
+                    } else if (error.code === 'auth/cancelled-popup-request') {
+                         // يحدث هذا إذا فتح المستخدم النافذة أكثر من مرة
+                         showError("الرجاء المحاولة مرة واحدة فقط.");
+                    } else {
+                        showError("فشل الدخول عبر جوجل: " + error.message);
+                    }
+                });
+        }
+
+
+        // --- 3. دالة تسجيل الدخول (بريد/كلمة سر) ---
+        function loginUser() {
+            const emailIn = document.getElementById("emailInput").value.trim();
+            const passwordIn = document.getElementById("passwordInput").value;
+
+            if (!emailIn || !passwordIn) { return showError("الرجاء ملء جميع الحقول."); }
+
+            auth.signInWithEmailAndPassword(emailIn, passwordIn)
+                .catch((error) => {
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                        showError("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+                    } else { showError("فشل في تسجيل الدخول: " + error.message); }
+                });
+        }
+
+        // --- 4. دالة تسجيل حساب جديد (يرسل رابط التفعيل) ---
+        function registerUser() {
+            const emailIn = document.getElementById("emailInput").value.trim();
+            const passwordIn = document.getElementById("passwordInput").value;
+
+            if (!emailIn || !passwordIn) { return showError("الرجاء ملء جميع الحقول."); }
+            if (passwordIn.length < 6) { return showError("يجب أن تكون كلمة المرور 6 أحرف أو أكثر."); }
+
+            auth.createUserWithEmailAndPassword(emailIn, passwordIn)
+                .then((userCredential) => {
+                    userCredential.user.sendEmailVerification()
+                        .then(() => {
+                            document.getElementById('authContent').style.display = 'none';
+                            document.getElementById('verificationPending').style.display = 'flex';
+                            auth.signOut(); 
+                        });
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/email-already-in-use') { showError("هذا البريد الإلكتروني مسجل بالفعل. حاول تسجيل الدخول."); } 
+                    else { showError("فشل في التسجيل: " + error.message); }
+                });
+        }
+
+        // --- 5. دالة تسجيل الخروج ---
+        function logoutUser() {
+            if(confirm("هل أنت متأكد من الخروج؟")) {
+                auth.signOut(); 
             }
         }
         
-        // --- 🤖 أدوات العميل (Client-Side Tools) ---
-        function clientSideToolCheck(text) {
-             const lowerText = text.toLowerCase();
-             
-             // هوية المطور: فرض الإجابة عن الهوية (الضمانة)
-             if (lowerText.includes("من طورك") || lowerText.includes("من صممك") || lowerText.includes("من صنعك") || lowerText.includes("هويتك")) {
-                 return "تم تطويري وبرمجتي بواسطة المبرمج بسام عمارة.";
-             }
-             
-             // محاكاة الوقت
-             if (lowerText.includes("كم الساعه") || lowerText.includes("ما هو الوقت")) {
-                 const now = new Date().toLocaleTimeString('ar-EG', { timeZone: 'Asia/Baghdad' });
-                 return `الساعة الآن في بغداد هي ${now}.`;
-             }
-             // محاكاة تنفيذ كود بايثون
-             if (lowerText.includes("نفذ كود") || lowerText.includes("run code")) {
-                 return "تم استلام الأمر بنجاح. بسبب القيود الأمنية، لا يمكنني تنفيذ الأكواد مباشرة هنا، ولكن الكود جاهز للتنفيذ على خادم خارجي.";
-             }
-             return null;
+        // --- 6. وظائف التشغيل الأساسية (لم تتغير) ---
+        function startApp() {
+            document.getElementById("headerRoomName").innerText = `الغرفة: MainRoom`; 
+            cleanOldMessages();
+            loadMessages();
         }
 
-        // --- دوال الميزات الإضافية ---
+        function cleanOldMessages() {
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); 
+            db.collection("messages")
+              .where("room", "==", defaultRoom)
+              .where("timestamp", "<", oneDayAgo).get()
+              .then((snapshot) => { snapshot.forEach((doc) => doc.ref.delete()); });
+        }
+
+        function loadMessages() {
+            db.collection("messages")
+              .where("room", "==", defaultRoom) 
+              .orderBy("timestamp", "asc")
+              .onSnapshot((snapshot) => {
+                  const list = document.getElementById("messagesList");
+                  list.innerHTML = "";
+                  
+                  snapshot.forEach((doc) => {
+                      const msg = doc.data();
+                      const div = document.createElement("div");
+                      const isMine = msg.sender === myName || msg.sender === auth.currentUser.email; // فحص إضافي
+                      
+                      let content = "";
+                      if (msg.type === 'image') { content = `<img src="${msg.content}" class="msg-img" onclick="showImage(this.src)">`; } 
+                      else if (msg.type === 'audio') { content = `<audio controls src="${msg.content}"></audio>`; } 
+                      else { content = msg.content; }
+
+                      div.className = `message ${isMine ? 'mine' : 'others'}`;
+                      div.innerHTML = `
+                        ${!isMine ? `<span class="sender-name">${msg.sender.split('@')[0]}</span>` : ''}
+                        ${content}
+                        <span class="msg-time">${msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...'}</span>
+                      `;
+                      list.appendChild(div);
+                  });
+                  list.scrollTop = list.scrollHeight;
+              });
+        }
         
-        function setLoading(isLoading) {
-            document.getElementById("send-btn").disabled = isLoading;
-            userInput.disabled = isLoading;
-            userInput.placeholder = isLoading ? "جاري التفكير..." : "اكتب رسالة أو ارفع صورة...";
-            typingIndicator.style.display = isLoading ? 'flex' : 'none'; 
-            loadingBar.style.width = isLoading ? '90%' : '0'; 
-            if(!isLoading) {
-                userInput.focus();
-                chatBox.scrollTop = chatBox.scrollHeight;
+        async function toggleRecording() {
+            const micBtn = document.getElementById('micBtn');
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => pushToFirebase(reader.result, 'audio');
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    micBtn.classList.add('recording');
+                    setTimeout(() => { if(isRecording) toggleRecording(); }, 60000);
+                } catch (err) { alert("يجب السماح بالمايكروفون"); }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                micBtn.classList.remove('recording');
             }
         }
 
-        function getChatHistoryArray() {
-            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            return history.slice(-CONTEXT_WINDOW_SIZE).map(msg => ({
-                role: msg.sender === 'user' ? 'user' : 'model',
-                text: msg.text.replace(/<[^>]*>?/gm, '') 
-            }));
-        }
-
-        function exportChat() {
-            const history = getChatHistoryArray();
-            let text = `محادثة مساعد بسام عمارة\n---\n`; // تم حذف Session ID من التصدير
-            
-            history.forEach(msg => {
-                const role = msg.sender === 'user' ? 'أنا' : 'المساعد';
-                text += `[${role}]: ${msg.text}\n`;
-            });
-
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Chat_Export_${Date.now()}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            addMessage("✅ تم تصدير المحادثة بنجاح.", 'ai-message');
-        }
-
-        function initializeQuickPrompts() {
-            const prompts = ["من طورك؟", "لخص هذه الرسالة", "كيف أستخدم الـ API؟", "اكتب لي كود HTML"];
-            const container = document.getElementById('quick-prompts');
-            
-            prompts.forEach(prompt => {
-                const btn = document.createElement('button');
-                btn.className = 'quick-btn';
-                btn.textContent = prompt;
-                btn.onclick = () => { userInput.value = prompt; sendMessage(); };
-                container.appendChild(btn);
-            });
-        }
-        
-        function setupScrollButtons() {
-            chatBox.onscroll = () => {
-                document.getElementById('scroll-top').style.display = chatBox.scrollTop > 100 ? 'block' : 'none';
-                const isAtBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 5;
-                document.getElementById('scroll-bottom').style.display = isAtBottom ? 'none' : 'block';
-            };
-        }
-        function scrollToBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
-        function scrollToTop() { chatBox.scrollTop = 0; }
-        
-        function changeFontSize(direction) {
-            const currentSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-size').replace('rem', ''));
-            let newSize = currentSize + (direction * 0.05);
-            if (newSize < 0.8) newSize = 0.8;
-            if (newSize > 1.2) newSize = 1.2;
-            document.documentElement.style.setProperty('--font-size', `${newSize}rem`);
-        }
-        
-        // --- دوال الصور والذاكرة والتنسيق ---
-        function handleImageSelect(event) {
-            const file = event.target.files[0];
+        function handleImageSelect() {
+            const file = document.getElementById('imgInput').files[0];
             if (file) {
-                if (!file.type.startsWith('image/')) { alert("الرجاء اختيار ملف صورة."); return; }
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    currentImageBase64 = e.target.result;
-                    document.getElementById('image-preview').src = currentImageBase64;
-                    imagePreviewContainer.style.display = "block";
-                };
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxW = 500;
+                        const scale = maxW / img.width;
+                        canvas.width = maxW;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        pushToFirebase(canvas.toDataURL('image/jpeg', 0.7), 'image');
+                    }
+                }
                 reader.readAsDataURL(file);
             }
         }
-        function removeImage() {
-            currentImageBase64 = null;
-            document.getElementById('image-preview').src = "";
-            imagePreviewContainer.style.display = "none";
-            document.getElementById('imageInput').value = "";
+
+        function sendMessage() {
+            const input = document.getElementById("msgInput");
+            if (input.value.trim()) {
+                pushToFirebase(input.value, 'text');
+                input.value = "";
+            }
         }
-        function safeSpeak(text) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const cleanText = text.replace(/[*#`]/g, '');
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = "ar-SA";
-            window.speechSynthesis.speak(utterance);
-        }
-        function saveToHistory(sender, text, imageBase64 = null) {
-            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            history.push({ sender, text, imageBase64 });
-            if (history.length > 50) history.shift();
-            localStorage.setItem('chatHistory', JSON.stringify(history));
-        }
-        function loadChatHistory() {
-            let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-            history.forEach(msg => {
-                const className = msg.sender === 'user' ? 'user-message' : 'ai-message';
-                let content = msg.text;
-                if (msg.imageBase64) content += `<br><img src="${msg.imageBase64}" class="chat-image">`;
-                addMessage(content, className, false);
+
+        function pushToFirebase(content, type) {
+            db.collection("messages").add({
+                content: content,
+                type: type,
+                sender: myName,
+                room: defaultRoom,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
-        function clearChatConfirmation() { document.getElementById('confirm-modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('confirm-modal').style.display = 'none'; }
-        function clearChat() {
-            localStorage.removeItem('chatHistory');
-            chatBox.innerHTML = "";
-            displayWelcomeMessage(); 
-            closeModal();
-        }
-        function toggleTheme() {
-            if (document.body.classList.contains("light-mode")) {
-                 document.body.classList.remove("light-mode");
-                 localStorage.setItem("theme", "dark");
-            } else {
-                 document.body.classList.add("light-mode");
-                 localStorage.setItem("theme", "light");
-            }
-        }
-        function loadTheme() {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "light") {
-                document.body.classList.add("light-mode");
-            }
-        }
-        function addMessage(html, className, save = true) {
-            const msgClass = className.includes('user') ? 'user-message-row' : 'ai-message-row';
-            const avatarSymbol = className.includes('user') ? '👤' : '🤖';
 
-            const row = document.createElement('div');
-            row.className = `message-row ${msgClass}`;
-
-            const avatarDiv = document.createElement('div');
-            avatarDiv.className = 'avatar';
-            avatarDiv.textContent = avatarSymbol;
-            
-            const div = document.createElement("div");
-            div.className = `message ${className}`;
-            div.innerHTML = html;
-            
-            row.appendChild(avatarDiv);
-            row.appendChild(div);
-            
-            if (className.includes('user')) {
-                div.style.order = 2; 
-                avatarDiv.style.order = 1; 
-            } else {
-                div.style.order = 1; 
-                avatarDiv.style.order = 2; 
-            }
-            
-            chatBox.appendChild(row);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function showImage(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
         }
 
-        function formatText(text) {
-            let formatted = text.replace(/```([\s\S]*?)```/g, function(match, code) {
-                // شريط الرأس البنفسجي
-                const header = `<div class="code-header">Code Block <button class="copy-code-btn" onclick="copyCode(this)">نسخ</button></div>`;
-                return `<pre>${header}<code>${code.replace(/</g, "&lt;")}</code></pre>`;
-            });
-            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-            return formatted;
-        }
-
-        function copyCode(btn) {
-            // الوصول إلى الكود الأصلي داخل <code>
-            const codeElement = btn.parentElement.nextElementSibling;
-            const code = codeElement ? codeElement.innerText : 'غير متوفر';
-            
-            navigator.clipboard.writeText(code);
-            btn.innerText = "تم النسخ!";
-            setTimeout(() => btn.innerText = "نسخ", 2000);
-        }
-
-        function handleEnter(event) { if (event.key === "Enter") sendMessage(); }
-
-        // --- Mic Logic ---
-        function toggleVoice() {
-            const micBtn = document.getElementById("mic-btn");
-            if (!('webkitSpeechRecognition' in window)) { alert("⚠️ المايك لا يعمل: متصفحك لا يدعم تحويل الصوت لنص. جرب Google Chrome."); return; }
-            if (recognition) { recognition.stop(); recognition = null; return; }
-            recognition = new webkitSpeechRecognition(); recognition.lang = "ar-SA"; recognition.continuous = false; recognition.interimResults = false;
-            recognition.onstart = function() { micBtn.classList.add("listening"); };
-            recognition.onend = function() { micBtn.classList.remove("listening"); recognition = null; };
-            recognition.onerror = function(event) { micBtn.classList.remove("listening"); recognition = null; alert("فشل في التقاط الصوت. تأكد من إعطاء إذن الميكروفون."); };
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                setTimeout(sendMessage, 500);
-            };
-            recognition.start();
-        }
+        document.getElementById("msgInput").addEventListener("keypress", (e) => {
+            if(e.key==="Enter") sendMessage();
+        });
+        
+        setInterval(cleanOldMessages, 60000);
     </script>
-
 </body>
 </html>
